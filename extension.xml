@@ -20,5 +20,6 @@
 		<includefile source="strings/strings.xml" />
 
 		<!-- Scripts -->
+		<script name="SoakManager" file="scripts/manager_soak.lua" />
 	</base>
 </root>
