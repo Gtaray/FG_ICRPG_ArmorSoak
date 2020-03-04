@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<!-- 
+  Please see the license.html file included with this distribution for 
+  attribution and copyright information.
+-->
+
+<root>
+    <windowclass name="charsheet_main" merge="join">
+        <sheetdata>
+            <!-- HP/HEARTS, ARMOR, DYING, etc -->
+            <genericcontrol name="hearticon" merge="delete" />
+            <basicnumber name="hearts">
+                <anchored to="defenseframe" position="insidetopleft" offset="51,22" width="40" height="24" merge="replace" />
+            </basicnumber>
+            <basicnumber name="hp">
+                <anchored to="hearts" position="belowleft" offset="-26,16" width="40"  height="24" merge="replace" />
+            </basicnumber>
+            <basicnumber name="wounds">
+                <anchored to="hp" position="right" offset="12,0" width="40" merge="replace" />
+            </basicnumber>
+
+            <genericcontrol name="armoricon">
+                <anchored to="hearts" position="righthigh" offset="45,-12" width="64" height="79" merge="replace"/>  
+            </genericcontrol>
+            <basicnumber name="armor_loot">
+                <anchored to="armor_base" position="right" offset="12,0" width="30" merge="replace" />
+            </basicnumber>
+            <basicnumber name="armor_dmg" source="defense.armor.damage">
+				<default>0</default>
+				<anchored width="30" height="24">
+					<bottom>
+						<parent>armoricon</parent>
+						<anchor>bottom</anchor>
+						<offset>-5</offset>
+					</bottom>
+					<left>
+						<parent>armoricon</parent>
+						<anchor>right</anchor>
+						<offset>31</offset>
+					</left>
+				</anchored>
+			</basicnumber>
+            <label_fieldtop name="armordmg_label">
+				<anchored to="armor_dmg" />
+				<static textres="char_label_damage" />
+			</label_fieldtop>
+
+            <number_linked name="armor">
+				<script>
+					function onInit()
+						addSource("defense.armor.base");
+						addSource("defense.armor.loot");
+                        addSource("defense.armor.damage");
+						
+						super.onInit();
+					end
+
+					function onSourceUpdate(node)
+						local nodeWin = window.getDatabaseNode();
+						local nBase = DB.getValue(nodeWin, "defense.armor.base", 0);
+						local nLoot = DB.getValue(nodeWin, "defense.armor.loot", 0);
+                        local nDmg = DB.getValue(nodeWin, "defense.armor.damage", 0);
+
+						setValue(math.max((nBase + nLoot) - nDmg, 0));
+					end
+
+					function action(draginfo)
+						local rActor = ActorManager.getActor("pc", window.getDatabaseNode());
+						ActionAttempt.performRoll(draginfo, rActor, "armor");
+						return true;
+					end
+					
+					function onDragStart(button, x, y, draginfo)
+						return action(draginfo);
+					end
+						
+					function onDoubleClick(x,y)
+						return action();
+					end
+				</script>
+			</number_linked>
+
+            <basicnumber name="armor_soak" source="defense.armor.soak" insertbefore="button_herocoin">
+				<default>0</default>
+				<anchored to="armor_loot" position="right" offset="20,0" width="40" />
+			</basicnumber>
+            <label_fieldtop name="armorsoak_label" insertbefore="button_herocoin">
+				<anchored to="armor_soak" />
+				<static textres="char_label_soak" />
+			</label_fieldtop>
+            <buttoncontrol>
+                <tooltip textres="char_tooltip_soakdamage"/>
+                <anchored>
+                    <top parent="armor_dmg" anchor="top" offset="-6" />
+                    <bottom parent="armor_dmg" anchor="bottom" />
+                    <left parent="armor_soak" anchor="left" offset="-5" />
+                    <right parent="armor_soak" anchor="right" offset="5" />
+                </anchored>
+                <color>FFFFFF</color>
+                <state frame="buttonup" textres="char_label_soak" />
+                <pressed frame="buttondown" textres="char_label_soak" />
+            </buttoncontrol>
+
+            <button_herocoin name="button_herocoin">
+				<anchored to="armoricon" position="right" offset="160,0" width="105" merge="replace" />
+			</button_herocoin>
+        </sheetdata>
+    </windowclass>
+</root>

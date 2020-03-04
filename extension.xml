@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<root version="3.3" release="1.0">
+	<announcement text="Loaded the Damage Soak extension" font="emotefont" />
+	<properties>
+		<name>Damage Soaking</name>
+		<version>1.0</version>
+		<author>George Taray</author>
+		<description>Adds the ability to soak damage by spending armor.</description>
+		<ruleset>
+			<name>ICRPG</name>
+		</ruleset>
+	</properties>
+	<base>
+		<!-- Campaign -->		
+		<includefile source="campaign/record_char_main.xml" />
+
+		<!-- Graphics -->
+
+		<!-- Strings -->
+		<includefile source="strings/strings.xml" />
+
+		<!-- Scripts -->
+	</base>
+</root>
