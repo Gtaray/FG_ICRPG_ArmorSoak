@@ -100,6 +100,13 @@
                 <color>FFFFFF</color>
                 <state frame="buttonup" textres="char_label_soak" />
                 <pressed frame="buttondown" textres="char_label_soak" />
+				<script>
+					function onButtonPress()
+						local rActor = ActorManager.getActor("pc", window.getDatabaseNode());
+						SoakManager.applySoak(rActor);
+						return true;
+					end
+				</script>
             </buttoncontrol>
 
             <button_herocoin name="button_herocoin">

@@ -15,10 +15,12 @@
 		<includefile source="campaign/record_char_main.xml" />
 
 		<!-- Graphics -->
+		<includefile source="graphics/graphics_icons.xml" />
 
 		<!-- Strings -->
 		<includefile source="strings/strings.xml" />
 
 		<!-- Scripts -->
+		<script name="SoakManager" file="scripts/manager_soak.lua" />
 	</base>
 </root>
