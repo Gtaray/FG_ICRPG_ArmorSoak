@@ -6,14 +6,15 @@
 OOB_MSGTYPE_APPLYDMG = "applydmg";
 
 function onInit() 
-	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_APPLYDMG, handleApplyDamage);
+    OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_APPLYDMG, handleApplyDamage);
 end
 
 ------------------------------------------------------
 -- Handling setting SOAK amount when PC takes damage
 ------------------------------------------------------
 function handleApplyDamage(msgOOB)
-    if not msgOOB.sTargetType or msgOOB.sTargetType ~= "pc" then return; end
+    -- run the effort handler first
+    if not msgOOB.sTargetType then return; end
     local rSource = ActorManager.getActor(msgOOB.sSourceType, msgOOB.sSourceNode);
     local rTarget = ActorManager.getActor(msgOOB.sTargetType, msgOOB.sTargetNode);
 
@@ -25,9 +26,10 @@ function handleApplyDamage(msgOOB)
 
     -- Don't set SOAK when healed
     if not bHeal then
-        local nSoak, nOverflow = calculateSoak(rSource, rTarget, msgOOB.sDamage, nTotal)
-        setSoakAmount(nSoak, nOverflow);
+        local nSoak, nOverflow = calculateSoak(rSource, rTarget, msgOOB.sDamage, nDmg)
+        setSoakAmount(rTarget, nSoak, nOverflow);
     end
+    ActionEffort.handleApplyDamage(msgOOB)
 end
 
 function calculateSoak(rSource, rTarget, sDesc, nDmg)
@@ -36,12 +38,13 @@ function calculateSoak(rSource, rTarget, sDesc, nDmg)
     if not sTargetNode then return; end
     if not nDmg or nDmg < 0 then return; end
 
+
     local aNotifications = {};
     local nTotalHP, nWounds;
     nTotalHP = DB.getValue(sTargetNode, "health.hp", 0);
     nWounds = DB.getValue(sTargetNode, "health.wounds", 0);
 
-    local nAdjustedDmg,_,nRemainder = calculateDamage(rTarget, rSource, sDesc, nDmg, nTotalHP, nWounds, aNotifications);
+    local nAdjustedDmg,_,nRemainder = ActionEffort.calculateDamage(rTarget, rSource, sDesc, nDmg, nTotalHP, nWounds, aNotifications);
     return nAdjustedDmg, nRemainder;
 end
 
@@ -66,33 +69,44 @@ end
 function applySoak(rActor)
     local sActorType, nodeActor = ActorManager.getTypeAndNode(rActor);
     if not nodeActor then return; end
-    Debug.chat("Actor: " .. nodeActor);
 
     local nSoak = DB.getValue(nodeActor, "defense.armor.soak", 0);
     local nOverflow = DB.getValue(nodeActor, "defense.armor.overflow", 0);
-    Debug.chat("Soak: " .. nSoak . " | Overflow: " .. nOverflow);
 
     -- If soak is less than damage, print a message in chat, but don't actually reduce armor
     -- since there's no reason to soak this amount.
     if nSoak <= nOverflow then
-        Debug.chat("Soak is less than or equal to overflow");
+        ChatManager.SystemMessage("You must soat at least " .. (nOverflow + 1) .. " damage.");
+        return;
     else
         if nSoak > 0 then
             -- Adjusted SOAK is the amount to heal the PC
             local nAdjustedSoak = nSoak - nOverflow;
             local nWounds = DB.getValue(nodeActor, "health.wounds", 0);
             local nArmorDmg = DB.getValue(nodeActor, "defense.armor.damage", 0);
-            local nArmorTotal = DB.getValue(nodeActor, "defense.armor.total", 0);
+            local nArmorBase = DB.getValue(nodeActor, "defense.armor.base", 0);
+            local nArmorLoot = DB.getValue(nodeActor, "defense.armor.loot", 0);
+            local nArmorTotal = nArmorBase + nArmorLoot;
+            if nArmorDmg + nSoak > nArmorTotal then
+                ChatManager.SystemMessage("Not enough ARMOR to soak " .. nSoak .. " damage.");
+                return;
+            end
 
+            -- if the soak amount is greature than our wounds, change it
+            if nAdjustedSoak > nWounds then
+                nAdjustedSoak = nWounds;
+            end
+            if nAdjustedSoak > nArmorTotal then
+                nAdjustedSoak = nArmorTotal;
+            end
             nWounds = nWounds - nAdjustedSoak;
-            nArmorDmg = math.min((nArmorDmg + nSoak), nArmorTotal);
-            Debug.chat("Adjusted Wounds: " .. nWounds);
+            nArmorDmg = nArmorDmg + nSoak;
 
             messageSoak(rActor, nAdjustedSoak, false);
             
             -- Update health and armor dmg in DB
-            DB.setValue(nodeTarget, "health.wounds", "number", nWounds);
-            DB.setValue(nodeTarget, "defense.armor.damage", "number", nArmorDmg);
+            DB.setValue(nodeActor, "health.wounds", "number", nWounds);
+            DB.setValue(nodeActor, "defense.armor.damage", "number", nArmorDmg);
 
             -- Update conditions to reflect changes
             updateConditions(rActor);
@@ -106,8 +120,8 @@ function updateConditions(rActor)
     local sActorType, nodeActor = ActorManager.getTypeAndNode(rActor);
     if not nodeActor then return; end
     local nTotalHP, nWounds;
-    nTotalHP = DB.getValue(sTargetNode, "health.hp", 0);
-    nWounds = DB.getValue(sTargetNode, "health.wounds", 0);
+    nTotalHP = DB.getValue(nodeActor, "health.hp", 0);
+    nWounds = DB.getValue(nodeActor, "health.wounds", 0);
 
     if EffectManagerICRPG.hasCondition(rActor, "Stable") then
         EffectManager.removeEffect(ActorManager.getCTNode(rActor), "Stable");
@@ -126,19 +140,14 @@ function updateConditions(rActor)
 	end
 end
 
-function messageSoak(rActor, sTotal, bSecret)
+function messageSoak(rActor, sTotal, bSecret, sExtra)
     if not rActor then
 		return;
     end
-	
-	local msgShort = {font = "msgfont"};
-	local msgLong = {font = "msgfont"};
+    
+    local rMessage = ChatManager.createBaseMessage(rActor, nil);
+    rMessage.icon = "soak"
+    rMessage.text = "[SOAK: " .. sTotal .. "]";
 
-    msgShort.icon = "soak";
-    msgLong.icon = "soak";
-
-    msgShort.text = "Soak " .. sTotal .. " damage.";
-	msgLong.text = "Soak " .. sTotal .. " damage.";
-	
-	ActionsManager.outputResult(bSecret, rActor, nil, msgLong, msgShort);
+    Comm.deliverChatMessage(rMessage);
 end

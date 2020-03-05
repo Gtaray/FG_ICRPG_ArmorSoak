@@ -102,7 +102,6 @@
                 <pressed frame="buttondown" textres="char_label_soak" />
 				<script>
 					function onButtonPress()
-						Debug.chat("Pressed SOAK button");
 						local rActor = ActorManager.getActor("pc", window.getDatabaseNode());
 						SoakManager.applySoak(rActor);
 						return true;
