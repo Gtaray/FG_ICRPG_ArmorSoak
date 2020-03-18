@@ -9,7 +9,7 @@
     <windowclass name="charsheet_main" merge="join">
         <sheetdata>
             <!-- HP/HEARTS, ARMOR, DYING, etc -->
-            <genericcontrol name="hearticon" merge="delete" />
+            <!-- <genericcontrol name="hearticon" merge="delete" />
             <basicnumber name="hearts">
                 <anchored to="defenseframe" position="insidetopleft" offset="51,22" width="40" height="24" merge="replace" />
             </basicnumber>
@@ -18,15 +18,19 @@
             </basicnumber>
             <basicnumber name="wounds">
                 <anchored to="hp" position="right" offset="12,0" width="40" merge="replace" />
-            </basicnumber>
+            </basicnumber> -->
 
+			<genericcontrol name="hearticon">
+				<frame name="hearts" />
+				<anchored to="defenseframe" position="insidetopleft" offset="20,15" width="176" height="19" />
+			</genericcontrol>
             <genericcontrol name="armoricon">
-                <anchored to="hearts" position="righthigh" offset="45,-12" width="64" height="79" merge="replace"/>  
+                <anchored to="hearticon" position="righthigh" offset="15,-5" width="64" height="79" />
             </genericcontrol>
             <basicnumber name="armor_loot">
                 <anchored to="armor_base" position="right" offset="12,0" width="30" merge="replace" />
             </basicnumber>
-            <basicnumber name="armor_dmg" source="defense.armor.damage">
+            <basicnumber name="armor_dmg" source="defense.armor.damage" insertbefore="statsframe">
 				<default>0</default>
 				<anchored width="30" height="24">
 					<bottom>
@@ -41,7 +45,7 @@
 					</left>
 				</anchored>
 			</basicnumber>
-            <label_fieldtop name="armordmg_label">
+            <label_fieldtop name="armordmg_label" insertbefore="statsframe">
 				<anchored to="armor_dmg" />
 				<static textres="char_label_damage" />
 			</label_fieldtop>
@@ -81,21 +85,29 @@
 				</script>
 			</number_linked>
 
-            <basicnumber name="armor_soak" source="defense.armor.soak" insertbefore="button_herocoin">
+            <basicnumber name="armor_soak" source="defense.armor.soak.value" insertbefore="statsframe">
 				<default>0</default>
-				<anchored to="armor_loot" position="right" offset="20,0" width="40" />
+				<anchored to="armor_loot" position="right" offset="20,0" width="30" />
 			</basicnumber>
-            <label_fieldtop name="armorsoak_label" insertbefore="button_herocoin">
+            <label_fieldtop name="armorsoak_label" insertbefore="statsframe">
 				<anchored to="armor_soak" />
 				<static textres="char_label_soak" />
 			</label_fieldtop>
-            <buttoncontrol>
+			<basicnumber name="armor_soakbonus" source="defense.armor.soak.bonus.loot" insertbefore="statsframe">
+				<default>0</default>
+				<anchored to="armor_soak" position="right" offset="12,0" width="30" />
+			</basicnumber>
+			<label_fieldtop name="armorsoakbonus_label" insertbefore="statsframe">
+				<anchored to="armor_soakbonus" />
+				<static textres="char_label_bonus" />
+			</label_fieldtop>
+            <buttoncontrol name="button_soak" insertbefore="statsframe">
                 <tooltip textres="char_tooltip_soakdamage"/>
                 <anchored>
                     <top parent="armor_dmg" anchor="top" offset="-6" />
                     <bottom parent="armor_dmg" anchor="bottom" />
-                    <left parent="armor_soak" anchor="left" offset="-5" />
-                    <right parent="armor_soak" anchor="right" offset="5" />
+                    <left parent="armor_soak" anchor="left" offset="5" />
+                    <right parent="armor_soakbonus" anchor="right" offset="-5" />
                 </anchored>
                 <color>FFFFFF</color>
                 <state frame="buttonup" textres="char_label_soak" />
@@ -109,8 +121,9 @@
 				</script>
             </buttoncontrol>
 
-            <button_herocoin name="button_herocoin">
-				<anchored to="armoricon" position="right" offset="160,0" width="105" merge="replace" />
+			<button_herocoin name="button_herocoin" merge="delete" />
+			<button_herocoin name="button_herocoin" insertbefore="skillframe">
+				<anchored to="effortframe" position="insidebottomright" offset="20,10" width="77" height="57" />
 			</button_herocoin>
         </sheetdata>
     </windowclass>

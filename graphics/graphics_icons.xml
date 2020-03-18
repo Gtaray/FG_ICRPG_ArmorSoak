@@ -7,4 +7,7 @@
 
 <root>
     <icon name="soak" file="graphics/icons/soak.png" />
+
+    <icon name="herocoin_off" file="graphics/icons/herocoin_off.png" />
+	  <icon name="herocoin_on" file="graphics/icons/herocoin_on.png" />
 </root>

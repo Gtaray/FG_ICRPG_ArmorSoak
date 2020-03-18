@@ -13,6 +13,7 @@
 	<base>
 		<!-- Campaign -->		
 		<includefile source="campaign/record_char_main.xml" />
+		<includefile source="campaign/template_char.xml" />
 
 		<!-- Graphics -->
 		<includefile source="graphics/graphics_icons.xml" />
@@ -22,5 +23,6 @@
 
 		<!-- Scripts -->
 		<script name="SoakManager" file="scripts/manager_soak.lua" />
+		<script name="ArmorSoak" file="scripts/armorsoak.lua" />
 	</base>
 </root>

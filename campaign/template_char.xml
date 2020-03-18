@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<!-- 
+  Please see the license.html file included with this distribution for 
+  attribution and copyright information.
+-->
+
+<root>
+    <template name="button_herocoin">
+		<buttonfield>
+			<script>
+				function onButtonPress()
+					local bUsing = getValue() == 0;
+					if bUsing then
+						local charNode = DB.getChild(getDatabaseNode(), "...")
+						local sCharName = DB.getValue(charNode, "name");
+
+						local msg = ChatManager.createBaseMessage(window.getDatabaseNode());
+						msg.text = "I use a Hero Coin!";
+						msg.icon = "action_herocoin";
+						msg.mode = "emote";
+						Comm.deliverChatMessage(msg);
+					end
+				end
+			</script>
+			<tooltip textres="char_tooltip_herocoin" />
+			<state icon="herocoin_off" />
+			<state icon="herocoin_on" />
+		</buttonfield>
+	</template>
+</root>
