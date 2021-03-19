@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<!-- 
+  Please see the license.html file included with this distribution for 
+  attribution and copyright information.
+-->
+
+<root>
+	<windowclass name="power_page_stats" merge="join">
+		<sheetdata>
+			<!-- POSITION BELOW HP -->
+			<!-- <basicnumber name="armor_soak" source="defense.armor.soak.value">
+				<default>0</default>
+				<anchored to="armoricon" position="righthigh" offset="10,52" width="30" height="22" />
+			</basicnumber>
+            <label_fieldtop name="armorsoak_label">
+				<anchored to="armor_soak" />
+				<static textres="char_label_soak" />
+			</label_fieldtop>
+
+			<buttoncontrol name="button_soak">
+                <tooltip textres="char_tooltip_soakdamage"/>
+                <anchored to="armor_soak" position="righthigh" offset="15,-6" width="60" height="30" />
+                <color>FFFFFF</color>
+                <state frame="buttonup" textres="char_label_soak" />
+                <pressed frame="buttondown" textres="char_label_soak" />
+				<script>
+					function onButtonPress()
+						local rActor = ActorManager.getActor("pc", window.getDatabaseNode());
+						SoakManager.applySoak(rActor);
+						return true;
+					end
+				</script>
+            </buttoncontrol> -->
+
+			<!-- POSITION BOTTOM OF FRAME-->
+			<frame_char name="statsframe">
+				<bounds>20,5,-20,130</bounds>
+			</frame_char>
+
+			<buttoncontrol name="button_soak">
+                <tooltip textres="char_tooltip_soakdamage"/>
+                <anchored to="statsframe" position="insidebottomright" offset="25,10" width="90" height="28" />
+                <color>FFFFFF</color>
+                <state frame="buttonup" textres="char_label_soak" />
+                <pressed frame="buttondown" textres="char_label_soak" />
+				<script>
+					function onButtonPress()
+						local rActor = ActorManager.getActor("pc", window.getDatabaseNode());
+						SoakManager.applySoak(rActor);
+						return true;
+					end
+				</script>
+            </buttoncontrol>
+			<basicnumber name="armor_soak" source="defense.armor.soak.value">
+				<default>0</default>
+				<anchored width="30" height="22">
+					<left parent="armoricon" anchor="center" offset="10"/>
+					<bottom parent="statsframe" anchor="bottom" offset="-12"/>
+				</anchored>
+			</basicnumber>
+            <label_fieldtop name="armorsoak_label">
+				<anchored to="armor_soak" />
+				<static textres="char_label_soak" />
+			</label_fieldtop>
+			<basicnumber name="armor_dmg" source="defense.armor.damage">
+				<anchored width="30" height="22">
+					<right parent="armoricon" anchor="center" offset="-10"/>
+					<bottom parent="statsframe" anchor="bottom" offset="-12"/>
+				</anchored>
+				<default>0</default>
+			</basicnumber>
+            <label_fieldtop name="armordmg_label">
+				<anchored to="armor_dmg" />
+				<static textres="char_label_damage" />
+			</label_fieldtop>
+		</sheetdata>
+	</windowclass>
+</root>

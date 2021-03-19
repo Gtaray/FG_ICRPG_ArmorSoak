@@ -13,10 +13,8 @@ end
 -- Handling setting SOAK amount when PC takes damage
 ------------------------------------------------------
 function handleApplyDamage(msgOOB)
-    -- run the effort handler first
-    if not msgOOB.sTargetType then return; end
-    local rSource = ActorManager.getActor(msgOOB.sSourceType, msgOOB.sSourceNode);
-    local rTarget = ActorManager.getActor(msgOOB.sTargetType, msgOOB.sTargetNode);
+    local rSource = ActorManager.resolveActor(msgOOB.sSourceNode);
+	local rTarget = ActorManager.resolveActor(msgOOB.sTargetNode);
 
 	if rTarget then
 		rTarget.nOrder = msgOOB.nTargetOrder;
@@ -27,9 +25,8 @@ function handleApplyDamage(msgOOB)
     -- Don't set SOAK when healed
     if not bHeal then
         local nDmg, nRemainder = calculateSoak(rSource, rTarget, msgOOB.sDamage, nDmg)
-        local nSoakBonus = ActorManager2.getStat(rTarget, "soak");
+        local nSoakBonus = ActorManagerICRPG.getStat(rTarget, "soak");
         local _, nSoakMod, nEffectCount = EffectManagerICRPG.getEffectsBonus(rTarget, "SOAK", false);
-        Debug.chat(nSoakMod);
         if nEffectCount > 0 then
             nSoakBonus = nSoakBonus + nSoakMod;
         end
@@ -80,12 +77,11 @@ function applySoak(rActor)
     if not nodeActor then return; end
 
     local nSoak = DB.getValue(nodeActor, "defense.armor.soak.value", 0);
-    local nBonus = ActorManager2.getStat(rActor, "soak");
+    local nBonus = ActorManagerICRPG.getStat(rActor, "soak");
     local nOverflow = DB.getValue(nodeActor, "defense.armor.soak.overflow", 0);
     local nLimit = DB.getValue(nodeActor, "defense.armor.soak.limit", 0);
 
     local _, nSoakMod, nEffectCount = EffectManagerICRPG.getEffectsBonus(rActor, "SOAK", false);
-    Debug.chat(nSoakMod);
     if nEffectCount > 0 then
         nBonus = nBonus + nSoakMod;
     end

@@ -8,18 +8,6 @@
 <root>
     <windowclass name="charsheet_main" merge="join">
         <sheetdata>
-            <!-- HP/HEARTS, ARMOR, DYING, etc -->
-            <!-- <genericcontrol name="hearticon" merge="delete" />
-            <basicnumber name="hearts">
-                <anchored to="defenseframe" position="insidetopleft" offset="51,22" width="40" height="24" merge="replace" />
-            </basicnumber>
-            <basicnumber name="hp">
-                <anchored to="hearts" position="belowleft" offset="-26,16" width="40"  height="24" merge="replace" />
-            </basicnumber>
-            <basicnumber name="wounds">
-                <anchored to="hp" position="right" offset="12,0" width="40" merge="replace" />
-            </basicnumber> -->
-
 			<genericcontrol name="hearticon">
 				<frame name="hearts" />
 				<anchored to="defenseframe" position="insidetopleft" offset="20,15" width="176" height="19" />
@@ -122,7 +110,7 @@
             </buttoncontrol>
 
 			<button_herocoin name="button_herocoin" merge="delete" />
-			<button_herocoin name="button_herocoin" insertbefore="skillframe">
+			<button_herocoin name="button_herocoin">
 				<anchored to="effortframe" position="insidebottomright" offset="20,10" width="77" height="57" />
 			</button_herocoin>
         </sheetdata>
