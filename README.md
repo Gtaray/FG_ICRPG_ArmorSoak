@@ -14,3 +14,6 @@ For example, if a character that has a soak bonus of 2 takes 5 damage, then soak
 A new keyword has been added to support the BONUS to soak, called "SOAK".
 Loot bonus to this value can be added from items using the text "+# SOAK", and effects can modify it using something like "SOAK: +#".
 In the same way, you can also add negative soak values, which increase the cost of absorbing damage.
+
+## Compatibility
+This extension is compatible with all other ICRPG extensions.
