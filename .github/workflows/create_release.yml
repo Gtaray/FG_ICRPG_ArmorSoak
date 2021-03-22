@@ -22,11 +22,11 @@ jobs:
     - name: Archive Release
       uses: thedoctor0/zip-release@master
       with:
-        filename: 'ICRPG_EffortOverride.ext'
-        exclusions: '*.git* /*node_modules/* .editorconfig'
+        filename: 'ICRPG_ArmorSoak.ext'
+        exclusions: '*.git* /*node_modules/* .editorconfig body.md'
     - name: Create Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "ICRPG_EffortOverride.ext"
+        artifacts: "ICRPG_ArmorSoak.ext"
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
