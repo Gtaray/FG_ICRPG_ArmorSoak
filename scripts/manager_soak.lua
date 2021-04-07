@@ -19,12 +19,12 @@ function handleApplyDamage(msgOOB)
 	if rTarget then
 		rTarget.nOrder = msgOOB.nTargetOrder;
     end
-    local nDmg = tonumber(msgOOB.nTotal) or 0;
+    local nDmg, nRemainder = ActionEffort.handleApplyDamage(msgOOB) or 0;
     local bHeal = string.match(msgOOB.sDamage, "%[HEAL%]") or nDmg < 0;
 
     -- Don't set SOAK when healed
     if not bHeal then
-        local nDmg, nRemainder = calculateSoak(rSource, rTarget, msgOOB.sDamage, nDmg)
+        --local nDmg, nRemainder = calculateSoak(rSource, rTarget, msgOOB.sDamage, nDmg)
         local nSoakBonus = ActorManagerICRPG.getStat(rTarget, "soak");
         local _, nSoakMod, nEffectCount = EffectManagerICRPG.getEffectsBonus(rTarget, "SOAK", false);
         if nEffectCount > 0 then
@@ -35,7 +35,6 @@ function handleApplyDamage(msgOOB)
         -- Subtract soak and soakbonus
         setSoakAmount(rTarget, nDmg, nRemainder, nAdjustedSoak);
     end
-    ActionEffort.handleApplyDamage(msgOOB)
 end
 
 function calculateSoak(rSource, rTarget, sDesc, nDmg)
