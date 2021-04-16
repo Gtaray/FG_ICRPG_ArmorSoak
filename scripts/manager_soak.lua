@@ -3,53 +3,40 @@
 -- attribution and copyright information.
 --
 
-OOB_MSGTYPE_APPLYDMG = "applydmg";
+local fApplyDamageToTarget;
 
 function onInit() 
-    OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_APPLYDMG, handleApplyDamage);
+    fApplyDamageToTarget = ActionEffort.applyDamageToTarget;
+    ActionEffort.applyDamageToTarget = applyDamageWithSoak;
 end
 
 ------------------------------------------------------
 -- Handling setting SOAK amount when PC takes damage
 ------------------------------------------------------
-function handleApplyDamage(msgOOB)
-    local rSource = ActorManager.resolveActor(msgOOB.sSourceNode);
-	local rTarget = ActorManager.resolveActor(msgOOB.sTargetNode);
+function applyDamageWithSoak(rSource, rTarget, bSecret, rDamageOutput)
+    local nDmg, nRemainder = fApplyDamageToTarget(rSource, rTarget, bSecret, rDamageOutput);
 
-	if rTarget then
-		rTarget.nOrder = msgOOB.nTargetOrder;
+    -- We ONLY calculate soak if the damage is to the default health resource
+    -- Any other solution would be madness
+    local bDoSoak = false;
+    for _,sRes in ipairs(rDamageOutput.aHealthResources) do
+        if sRes:lower() == DataCommon.health_resource_default then
+            bDoSoak = true;
+        end
     end
-    local nDmg, nRemainder = ActionEffort.handleApplyDamage(msgOOB) or 0;
-    local bHeal = string.match(msgOOB.sDamage, "%[HEAL%]") or nDmg < 0;
 
-    -- Don't set SOAK when healed
-    if not bHeal then
-        --local nDmg, nRemainder = calculateSoak(rSource, rTarget, msgOOB.sDamage, nDmg)
+    -- Don't set SOAK when healed, or when the damage is DRAIN
+    if bDoSoak and not rDamageOutput.bHeal and not rDamageOutput.bDrain then
         local nSoakBonus = ActorManagerICRPG.getStat(rTarget, "soak");
         local _, nSoakMod, nEffectCount = EffectManagerICRPG.getEffectsBonus(rTarget, "SOAK", false);
         if nEffectCount > 0 then
             nSoakBonus = nSoakBonus + nSoakMod;
         end
-        local nAdjustedSoak = math.max(nDmg - nSoakBonus, 1);
+        local nAdjustedSoak = math.max(nDmg - nSoakBonus, 0);
 
         -- Subtract soak and soakbonus
         setSoakAmount(rTarget, nDmg, nRemainder, nAdjustedSoak);
     end
-end
-
-function calculateSoak(rSource, rTarget, sDesc, nDmg)
-    local sTargetType, sTargetNode = ActorManager.getTypeAndNode(rTarget);
-    if sTargetType ~= "pc" then return; end
-    if not sTargetNode then return; end
-    if not nDmg or nDmg < 0 then return; end
-
-    local aNotifications = {};
-    local nTotalHP, nWounds;
-    nTotalHP = DB.getValue(sTargetNode, "health.hp", 0);
-    nWounds = DB.getValue(sTargetNode, "health.wounds", 0);
-
-    local nAdjustedDmg,_,nRemainder = ActionEffort.calculateDamage(rTarget, rSource, sDesc, nDmg, nTotalHP, nWounds, aNotifications);
-    return nAdjustedDmg, nRemainder;
 end
 
 -- if there is a remainder (i.e. if a character was reduced to 0 hp), we need to calculate the
@@ -101,7 +88,7 @@ function applySoak(rActor)
         if nSoak > 0 then
             -- Adjusted SOAK is the amount to heal the PC
             local nHealAmount = nTotalSoak - nOverflow;
-            local nWounds = DB.getValue(nodeActor, "health.wounds", 0);
+            local nWounds, nMax = ActorManagerICRPG.getHealthResource(rActor);
             local nArmorDmg = DB.getValue(nodeActor, "defense.armor.damage", 0);
             local nArmorBase = DB.getValue(nodeActor, "defense.armor.base", 0);
             local nArmorLoot = DB.getValue(nodeActor, "defense.armor.loot", 0);
@@ -127,39 +114,22 @@ function applySoak(rActor)
             messageSoak(rActor, nSoak, nTotalSoak, nHealAmount, false);
             
             -- Update health and armor dmg in DB
-            DB.setValue(nodeActor, "health.wounds", "number", nWounds);
+            ActorManagerICRPG.setHealthResource(rActor, nil, nWounds);
             DB.setValue(nodeActor, "defense.armor.damage", "number", nArmorDmg);
 
             -- Update conditions to reflect changes
-            updateConditions(rActor);
+            updateConditions(rActor, nWounds, nMax, 0);
             -- Reset SOAK
             setSoakAmount(rActor, 0, 0, 0);
         end
     end
 end
 
-function updateConditions(rActor)
-    local sActorType, nodeActor = ActorManager.getTypeAndNode(rActor);
-    if not nodeActor then return; end
-    local nTotalHP, nWounds;
-    nTotalHP = DB.getValue(nodeActor, "health.hp", 0);
-    nWounds = DB.getValue(nodeActor, "health.wounds", 0);
-
-    if EffectManagerICRPG.hasCondition(rActor, "Stable") then
-        EffectManager.removeEffect(ActorManager.getCTNode(rActor), "Stable");
+function updateConditions(rActor, nCur, nMax, nRemainder)
+    local aRes = DataCommon.health_resource[DataCommon.health_resource_default];
+    if aRes.conditions then
+        aRes.conditions(rActor, nCur, nMax, nRemainder)
     end
-    if EffectManagerICRPG.hasCondition(rActor, "Dead") then
-        EffectManager.removeEffect(ActorManager.getCTNode(rActor), "Dead");
-    end
-    if nWounds < nTotalHP then
-		if EffectManagerICRPG.hasCondition(rActor, "Dying") then
-			EffectManager.removeEffect(ActorManager.getCTNode(rActor), "Dying");
-		end
-	else
-		if not EffectManagerICRPG.hasCondition(rActor, "Dying") then
-			EffectManager.addEffect("", "", ActorManager.getCTNode(rActor), { sName = "Dying", nDuration = 0 }, true);
-		end
-	end
 end
 
 function messageSoak(rActor, nSoak, nTotal, nHeal, bSecret, sExtra)

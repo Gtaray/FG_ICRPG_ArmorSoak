@@ -9,7 +9,7 @@
 		<ruleset>
 			<name>ICRPG</name>
 		</ruleset>
-		<loadorder>40</loadorder>
+		<loadorder>35</loadorder>
 	</properties>
 	<base>
 		<!-- Campaign -->		
