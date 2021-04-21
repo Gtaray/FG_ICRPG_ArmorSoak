@@ -86,7 +86,7 @@
 				<anchored to="armor_soak" position="right" offset="12,0" width="30" />
 			</basicnumber>
 			<label_fieldtop name="armorsoakbonus_label" insertbefore="statsframe">
-				<anchored to="armor_soakbonus" />
+				<anchored to="armor_soakbonus" offset="4,0" width="38"/>
 				<static textres="char_label_bonus" />
 			</label_fieldtop>
             <buttoncontrol name="button_soak" insertbefore="statsframe">
